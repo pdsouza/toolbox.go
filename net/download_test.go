@@ -17,7 +17,6 @@
 package net
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
