@@ -23,16 +23,28 @@ import (
 
 func TestDownload(t *testing.T) {
 	var cases = []struct {
-		URL string
+		URL      string
+		Filename string
 	}{
-		{"https://github.com/maruos/maruos/releases/download/v0.4/maru-v0.4-sha1sums.asc.txt"},
-		{"https://github.com/maruos/blueprints/releases/download/v0.4/maru-v0.4-jessie-rootfs-b1656e03.tar.gz"},
+		{
+			"https://github.com/maruos/maruos/releases/download/v0.4/maru-v0.4-sha1sums.asc.txt",
+			"maru-v0.4-sha1sums.asc.txt",
+		},
+		{
+			"https://github.com/maruos/blueprints/releases/download/v0.4/maru-v0.4-jessie-rootfs-b1656e03.tar.gz",
+			"maru-v0.4-jessie-rootfs-b1656e03.tar.gz",
+		},
 	}
 
 	for i, tt := range cases {
 		req, err := NewDownloadRequest(tt.URL)
 		if err != nil {
 			t.Errorf("case #%d: Failed to create download request: %s", i, err.Error())
+			continue
+		}
+
+		if req.Filename != tt.Filename {
+			t.Errorf("case #%d: Wrong filename, expected %q, got %q", i, tt.Filename, req.Filename)
 		}
 
 		gotStart, gotEnd := false, false
@@ -47,6 +59,7 @@ func TestDownload(t *testing.T) {
 		path, err := req.Download()
 		if err != nil {
 			t.Errorf("case #%d: Failed to download: %s", i, err.Error())
+			continue
 		}
 
 		if !gotStart || !gotEnd {

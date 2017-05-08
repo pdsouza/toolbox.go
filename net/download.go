@@ -25,6 +25,7 @@ import (
 
 type DownloadRequest struct {
 	Request         *http.Request
+	Filename        string
 	ProgressHandler DownloadProgressHandler
 }
 
@@ -34,7 +35,11 @@ func NewDownloadRequest(url string) (*DownloadRequest, error) {
 		return nil, err
 	}
 
-	return &DownloadRequest{req, nil}, nil
+	// assume last element of path is download name
+	tokens := strings.Split(url, "/")
+	name := tokens[len(tokens)-1]
+
+	return &DownloadRequest{req, name, nil}, nil
 }
 
 type DownloadProgressHandler func(percent float64)
