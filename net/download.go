@@ -45,32 +45,29 @@ func NewDownloadRequest(url string) (*DownloadRequest, error) {
 type DownloadProgressHandler func(percent float64)
 
 func (d *DownloadRequest) Download() (path string, err error) {
-	path = ""
 	resp, err := http.DefaultClient.Do(d.Request)
 	if err != nil {
-		return path, err
+		return d.Filename, err
 	}
 	defer resp.Body.Close()
 
-	tokens := strings.Split(d.Request.URL.String(), "/")
-	path = tokens[len(tokens)-1]
-	partialFile := path + ".partial"
+	partialFile := d.Filename + ".partial"
 	fout, err := os.Create(partialFile)
 	if err != nil {
-		return path, err
+		return d.Filename, err
 	}
 
 	if err := copyAndReportProgress(fout, resp.Body, resp.ContentLength, d.ProgressHandler); err != nil {
 		fout.Close()
-		return path, err
+		return d.Filename, err
 	}
 	fout.Close()
 
-	if err := os.Rename(partialFile, path); err != nil {
-		return path, err
+	if err := os.Rename(partialFile, d.Filename); err != nil {
+		return d.Filename, err
 	}
 
-	return path, nil
+	return d.Filename, nil
 }
 
 func copyAndReportProgress(dst io.Writer, src io.Reader, length int64, handler DownloadProgressHandler) error {
